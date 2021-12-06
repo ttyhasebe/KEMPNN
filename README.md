@@ -24,8 +24,8 @@ This program is tested on the following environments:
 
 ### Examples
 
-* To use the KEMPNN with custom dataset, knowledge, and training parameters, please refer to the example program [/exmaples/custom_dataset.py](exmaples/custom_dataset.py).
-* To gain more control over model and training using torch models, optimizer, dataloader etc., please refer to the example program [/exmaples/custom_training.py](exmaples/custom_training.py).
+* To use the KEMPNN with custom dataset, knowledge, and training parameters, please refer to the example program [/exmaples/custom_dataset.py](/exmaples/custom_dataset.py).
+* To gain more control over model and training using torch models, optimizer, dataloader etc., please refer to the example program [/exmaples/custom_training.py](/exmaples/custom_training.py).
 
 ### Training and Evaluation from CLI
 
