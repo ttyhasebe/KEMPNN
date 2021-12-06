@@ -1,18 +1,28 @@
 # KEMPNN (Knowledge-Embedded Message-Passing Neural Networks)
 
+KEMPNN (Knowledge-Embedded Message-Passing Neural Networks) is a message-passing neural networks that
+can be supervied togather with human-annotated knowledge annotations on the molecular graph to improve the accuracy.
+
 This package is an implementation of the paper: [Knowledge-Embedded Message-Passing Neural Networks: Improving Molecular Property Prediction with Human Knowledge](https://doi.org/10.1021/acsomega.1c03839) by the author.
 
-## Requirements
+
+## Getting started
+
+To use this package, please clone this repository to your local disk.
+
+You can also install KEMPNN as a package with dependencies if needed (torch is not included in dependencies).
+
+    $ pip install -e .
+
+### Requirements
 This program is tested on the following environments:
 
 * Python 3.9, torch 1.9.1, cuda11.1
 * Python 3.8, torch 1.7.1, cuda10.1
 
-## Usage
+### Training and Evaluation from CLI
 
-### Training and Evaluation
-
-By executing kempnn.py, the KEMPNN is trained with hyperparameter optimization and evaluated in multiple runs.
+By executing kempnn.py (on the project root), the KEMPNN is trained with hyperparameter optimization and evaluated in multiple runs.
 
 The following command will train KEMPNN with knowledge supervision enabled, frac. train=0.8 on ESOL dataset:
 
@@ -30,12 +40,16 @@ To train KEMPNN with no set2set aggregation and frac. train=0.2 on Tg dataset
 
     $ python kempnn.py PolymerTg --frac_train 0.2 --no_set2set --save
 
+To see the detailed description of this CLI interface:
+
+    $ python kempnn.py -h
+
 
 ### Custom dataset
 
 To use the KEMPNN with custom dataset, knowledge, and training parameters, please refer to the example program "exmaple/custom_dataset.py".
 
-To obtain more control over model and training using Trainer class, please refer to the example program "exmaple/custom_training.py".
+To gain more control over model and training using torch models, optimizer, dataloader etc., please refer to the example program "exmaple/custom_training.py".
 
 
 ### Results
@@ -68,7 +82,6 @@ Example of the output:
         "results": [...],
         ...
     }
-
 
 
 ## Cite

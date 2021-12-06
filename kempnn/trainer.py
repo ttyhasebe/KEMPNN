@@ -80,7 +80,7 @@ class MoleculeTrainer:
     def prepareData(self, cfg):
         self.dataset = loadDataset(cfg)
 
-    def fit(self, model, cfg=None, verbose=True):
+    def fit(self, model, cfg=None, verbose=True, debug=False):
         """Execute model traning.
         """
         if cfg is None:
@@ -440,4 +440,17 @@ class MoleculeTrainer:
             f"best_epoch:{best_epoch} best_test_rmse:{best_test_rmse:.5f} "
             f"best_val_rmse:{best_valid_rmse:.5f}"
         )
+        if debug:
+            return (
+                ret,
+                {
+                    "k_loss_func": k_loss_func,
+                    "k_optimizer": k_optimizer,
+                    "loss_func": loss_func,
+                    "optimizer": optimizer,
+                    "scheduler": scheduler,
+                    "epochs": n_epoch,
+                    "batch_size": cfg["batch_size"],
+                },
+            )
         return ret

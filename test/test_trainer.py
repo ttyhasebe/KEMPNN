@@ -1,20 +1,17 @@
+import re
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 
-import numpy as np
 import torch
-from sklearn.preprocessing import StandardScaler
-from kempnn.loader import MoleculeCollater, MoleculeDataset, loadESOL
+
+from kempnn.knowledge import load_esol_crippen_knowledge
+from kempnn.loader import loadESOL
 from kempnn.models import KEMPNN, KEMPNNLoss
 from kempnn.trainer import MoleculeTrainer, defaultMoleculeTrainConfig
-from kempnn.knowledge import knowledgeDatasetFromFunc, load_esol_crippen_knowledge
-from kempnn.knowledge.crippen_pattern import make_crippen_knowledge_attention
-from io import StringIO
-import re
-from contextlib import redirect_stdout
-import sys
+
 
 class TestTrainer(unittest.TestCase):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dataset = loadESOL()
@@ -34,14 +31,14 @@ class TestTrainer(unittest.TestCase):
             loss=KEMPNNLoss(1, 0.1),  # loss weight for L_p, L_kp
             optimizer=torch.optim.Adam,
             optimizer_args={"lr": 0.00065},
-            optimize_schedule=torch.optim.lr_scheduler.MultiStepLR,
-            optimize_schedule_args={"milestones": [75, 100, 125], "gamma": 0.95},
+            optimize_schedule=torch.optim.lr_scheduler.StepLR,
+            optimize_schedule_args={"step_size": 75, "gamma": 0.95},
             epochs=2,
             batch_size=16,
             save=False,
             save_path="weights",
             knowledge=dict(
-                pretrain_epoch=2,  # epochs of knowledge pretain,0 -> disable pretrain
+                pretrain_epoch=2,
                 train_factor=0.2,  # loss weight for L_k
                 loss=torch.nn.MSELoss(),
                 optimizer=torch.optim.SGD,
@@ -52,8 +49,10 @@ class TestTrainer(unittest.TestCase):
         with StringIO() as buf, redirect_stdout(buf):
             trainer.fit(model, training_config)
             output = buf.getvalue()
-            self.assertRegex(output, r'knowledge_pretrain.*epoch:2.*rmse:[0-9\.]+')
-            self.assertRegex(output, r'Training result:.*test_rmse:[0-9\.]+')
+            self.assertRegex(
+                output, r"knowledge_pretrain.*epoch:2.*rmse:[0-9\.]+"
+            )
+            self.assertRegex(output, r"Training result:.*test_rmse:[0-9\.]+")
 
     def testTrainerWoKnowledge(self):
         trainer = MoleculeTrainer()
@@ -66,20 +65,30 @@ class TestTrainer(unittest.TestCase):
         training_config = dict(**defaultMoleculeTrainConfig)
         training_config.update(
             name="test",
-            loss=KEMPNNLoss(1, 0.1),  # loss weight for L_p, L_kp
-            optimizer=torch.optim.Adam,
-            optimizer_args={"lr": 0.00065},
-            optimize_schedule=torch.optim.lr_scheduler.MultiStepLR,
-            optimize_schedule_args={"milestones": [75, 100, 125], "gamma": 0.95},
+            loss=KEMPNNLoss(1, 0.123),  # loss weight for L_p, L_kp
+            optimizer=torch.optim.SGD,
+            optimizer_args={"lr": 0.000123},
+            optimize_schedule=torch.optim.lr_scheduler.StepLR,
+            optimize_schedule_args={"step_size": 75, "gamma": 0.95},
             epochs=2,
-            batch_size=16,
+            batch_size=10,
             save=False,
             save_path="weights",
-            knowledge=None
+            knowledge=None,
         )
         with StringIO() as buf, redirect_stdout(buf):
-            trainer.fit(model, training_config)
+            ret, dbg = trainer.fit(model, training_config, debug=True)
             output = buf.getvalue()
-            self.assertEqual(re.match(r'knowledge_pretrain.*epoch:2.*rmse:[0-9\.]+', output), None)
-            self.assertRegex(output, r'Training result:.*test_rmse:[0-9\.]+')
-
+            self.assertEqual(
+                re.match(
+                    r"knowledge_pretrain.*epoch:2.*rmse:[0-9\.]+", output
+                ),
+                None,
+            )
+            self.assertRegex(output, r"Training result:.*test_rmse:[0-9\.]+")
+            self.assertEqual(type(dbg["optimizer"]).__name__, "SGD")
+            self.assertEqual(dbg["loss_func"].beta, 0.123)
+            self.assertEqual(dbg["optimizer"].param_groups[0]["lr"], 0.000123)
+            self.assertEqual(type(dbg["scheduler"]).__name__, "StepLR")
+            self.assertEqual(dbg["epochs"], 2)
+            self.assertEqual(dbg["batch_size"], 10)
