@@ -1,0 +1,11 @@
+*__pycache__
+
+.vscode/
+*.json
+
+weights/
+
+dataset/
+*.egg-info
+
+Pipfile.lock

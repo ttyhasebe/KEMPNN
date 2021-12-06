@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+torch = {version = "==1.9.1", file = "https://download.pytorch.org/whl/cu111/torch-1.9.1%2Bcu111-cp39-cp39-linux_x86_64.whl"}
+numpy = "*"
+scipy = "*"
+matplotlib = "*"
+scikit-learn = "*"
+hyperopt = "*"
+rdkit-pypi = "*"
+numba = "*"
+pandas = "*"
+openpyxl = "*"
+
+[dev-packages]
+autopep8 = "*"
+pre-commit = "*"
+
+[requires]
+python_version = "3.9"
